@@ -1,6 +1,5 @@
 # Uncomment the required imports before adding the code
 
-from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
 from django.http import JsonResponse
@@ -78,9 +77,13 @@ def registration(request):
             email=email
         )
         login(request, user)
-        return JsonResponse({"userName": username, "status": "Authenticated"})
-    else:
-        return JsonResponse({"userName": username, "error": "Already Registered"})
+        return JsonResponse(
+            {"userName": username, "status": "Authenticated"}
+        )
+
+    return JsonResponse(
+        {"userName": username, "error": "Already Registered"}
+    )
 
 
 def get_dealerships(request, state="All"):
@@ -99,31 +102,26 @@ def get_dealer_reviews(request, dealer_id):
         reviews = get_request(endpoint)
 
         for review_detail in reviews:
-            response = analyze_review_sentiments(review_detail['review'])
+            response = analyze_review_sentiments(
+                review_detail['review']
+            )
             review_detail['sentiment'] = response['sentiment']
 
         return JsonResponse({"status": 200, "reviews": reviews})
 
-    return JsonResponse({"status": 400, "message": "Bad Request"})
+    return JsonResponse(
+        {"status": 400, "message": "Bad Request"}
+    )
 
 
 def get_dealer_details(request, dealer_id):
     if dealer_id:
         endpoint = f"/fetchDealer/{dealer_id}"
         dealership = get_request(endpoint)
-        return JsonResponse({"status": 200, "dealer": dealership})
+        return JsonResponse(
+            {"status": 200, "dealer": dealership}
+        )
 
-    return JsonResponse({"status": 400, "message": "Bad Request"})
-
-
-@csrf_exempt
-def add_review(request):
-    if not request.user.is_anonymous:
-        data = json.loads(request.body)
-        try:
-            post_review(data)
-            return JsonResponse({"status": 200})
-        except Exception:
-            return JsonResponse({"status": 401, "message": "Error in posting review"})
-    else:
-        return JsonResponse({"status": 403, "message": "Unauthorized"})
+    return JsonResponse(
+        {"status": 400, "message": "Bad Request"}
+    )
